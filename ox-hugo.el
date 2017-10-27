@@ -684,6 +684,55 @@ This function is called in the very end of
 This is an internal function."
   (advice-remove 'org-babel-exp-code #'org-hugo--org-babel-exp-code))
 
+(defun org-hugo--build-toc (info &optional n keyword local)
+  "Return table of contents as a string.
+
+INFO is a plist used as a communication channel.
+
+Optional argument N, when non-nil, is a positive integer
+specifying the depth of the table.
+
+Optional argument KEYWORD specifies the TOC keyword, if any, from
+which the table of contents generation has been initiated.
+
+When optional argument LOCAL is non-nil, build a table of
+contents according to the current headline."
+  (concat
+   (unless local
+     (let ((style (plist-get info :md-headline-style))
+           (loffset (plist-get info :hugo-level-offset))
+           (title "Table of Contents"))
+       (org-hugo--headline-title style 1 loffset title)))
+   (mapconcat
+    (lambda (headline)
+      (let* ((indentation
+              (make-string
+               (* 4 (1- (org-export-get-relative-level headline info)))
+               ?\s))
+             (number (format "%d."
+                             (org-last
+                              (org-export-get-headline-number headline info))))
+             (bullet (concat number (make-string (- 4 (length number)) ?\s)))
+             (title (org-export-data (org-element-property :title headline) info))
+             (toc-entry
+              (format "[%s](#%s)"
+                      (org-export-data-with-backend
+                       (org-export-get-alt-title headline info)
+                       (org-export-toc-entry-backend 'hugo)
+                       info)
+                      (or (org-element-property :CUSTOM_ID headline)
+                          (org-hugo-slug title)
+                          ;; (org-export-get-reference headline info)
+                          )))
+             (tags (and (plist-get info :with-tags)
+                        (not (eq 'not-in-toc (plist-get info :with-tags)))
+                        (let ((tags (org-export-get-tags headline info)))
+                          (and tags
+                               (format ":%s:"
+                                       (mapconcat #'identity tags ":")))))))
+        (concat indentation bullet toc-entry tags)))
+    (org-export-collect-headlines info n (and local keyword)) "\n")
+   "\n"))
 
 
 ;;; Transcode Functions
@@ -778,7 +827,7 @@ a communication channel."
               (loffset (plist-get info :hugo-level-offset))
               (todo (when todo
                       (concat (org-html--todo todo info) " "))))
-          (concat (org-hugo--headline-title style level loffset todo title anchor)
+          (concat (org-hugo--headline-title style level loffset title todo anchor)
                   contents)))))))
 
 ;;;;; Headline Helpers
@@ -830,13 +879,18 @@ returned slug string has the following specification:
          (str (replace-regexp-in-string "\\(^[-]*\\|[-]*$\\)" "" str)))
     str))
 
-(defun org-hugo--headline-title (style level loffset todo title &optional anchor)
+(defun org-hugo--headline-title (style level loffset title &optional todo anchor)
   "Generate a headline title in the preferred Markdown headline style.
-STYLE is the preferred style (`atx' or `setext').  LEVEL is the
-header level.  LOFFSET is the offset (a non-negative number) that
-is added to the Markdown heading level for `atx' style.  TODO is
-the Org TODO string.  TITLE is the headline title.  ANCHOR is the
-Hugo anchor tag for the section as a string."
+
+STYLE is the preferred style (`atx' or `setext').
+LEVEL is the header level.
+LOFFSET is the offset (a non-negative number) that is added to the
+Markdown heading level for `atx' style.
+TITLE is the headline title.
+
+Optional argument TODO is the Org TODO string.
+Optional argument ANCHOR is the Hugo anchor tag for the section as a
+string."
   ;; Use "Setext" style
   (if (and (eq style 'setext) (< level 3))
       (let* ((underline-char (if (= level 1) ?= ?-))
@@ -856,10 +910,23 @@ Hugo anchor tag for the section as a string."
   "Return body of document after converting it to Hugo-compatible Markdown.
 CONTENTS is the transcoded contents string.  INFO is a plist
 holding export options."
-  (org-trim (concat
-             contents
-             "\n"
-             (org-blackfriday-footnote-section info))))
+  (let* ((toc-level (plist-get info :with-toc))
+         (toc-level (if (and toc-level
+                             (not (wholenump toc-level)))
+                        (plist-get info :headline-levels)
+                      toc-level))
+         (toc (if (and toc-level
+                       (wholenump toc-level)
+                       (> toc-level 0)) ;TOC will be exported only if toc-level is positive
+                  (concat (org-hugo--build-toc info toc-level) "\n")
+                "")))
+    (org-trim (concat
+               toc
+               contents
+               ;; Make sure CONTENTS is separated from table of contents
+               ;; and footnotes with at least a blank line.
+               "\n"
+               (org-blackfriday-footnote-section info)))))
 
 ;;;; Keyword
 (defun org-hugo-keyword (keyword contents info)
@@ -874,6 +941,15 @@ channel."
            (string-match-p "\\`\\s-*more\\s-*\\'" value))
       ;; https://gohugo.io/content-management/summaries#user-defined-manual-summary-splitting
       "<!--more-->")
+     ((and (equal "TOC" kwd)
+           (string-match-p "\\<headlines\\>" value))
+      (let ((depth (and (string-match "\\<[0-9]+\\>" value)
+                        (string-to-number (match-string 0 value))))
+            (local? (string-match-p "\\<local\\>" value)))
+        (when (and depth
+                   (> depth 0))
+          (org-remove-indentation
+           (org-hugo--build-toc info depth keyword local?)))))
      (t
       (org-md-keyword keyword contents info)))))
 
