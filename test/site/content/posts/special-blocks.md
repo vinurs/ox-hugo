@@ -16,6 +16,8 @@ This is _an article_.
 
 </article>
 
+<section class="outline-2 foo">
+  <section></section>
 
 ### Block with NAME {#block-with-name}
 
@@ -29,6 +31,8 @@ _Some_ **text** --- 1
 | d | e | f |
 
 </aside>
+
+</section>
 
 
 ### Block with class and id {#block-with-class-and-id}

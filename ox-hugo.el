@@ -699,6 +699,15 @@ specified for them):
   :type 'boolean)
 ;;;###autoload (put 'org-hugo-link-desc-insert-type 'safe-local-variable 'booleanp)
 
+(defcustom org-hugo-container-element ""
+  "HTML element to use for wrapping top level sections.
+Can be set with the in-buffer HTML_CONTAINER property.
+
+When set to \"\", the top level sections are not wrapped in any
+HTML element."
+  :group 'org-export-hugo
+  :type 'string)
+
 (defcustom org-hugo-langs-no-descr-in-code-fences '()
   "List of languages whose descriptors should not be exported to Markdown.
 
@@ -797,6 +806,7 @@ newer."
                    (:hugo-paired-shortcodes "HUGO_PAIRED_SHORTCODES" nil org-hugo-paired-shortcodes space)
                    (:hugo-pandoc-citations "HUGO_PANDOC_CITATIONS" nil nil)
                    (:bibliography "BIBLIOGRAPHY" nil nil newline) ;Used in ox-hugo-pandoc-cite
+                   (:html-container "HTML_CONTAINER" nil org-hugo-container-element)
 
                    ;; Front-matter variables
                    ;; https://gohugo.io/content-management/front-matter/#front-matter-variables
@@ -1779,10 +1789,46 @@ a communication channel."
                                (org-hugo--get-anchor headline info)))
                (headline-title (org-hugo--headline-title style level loffset title
                                                          todo-fmtd anchor numbers))
+               (wrap-element (org-hugo--container headline info))
                (content-str (or (org-string-nw-p contents) "")))
-          (format "%s%s" headline-title content-str)))))))
+          (if wrap-element
+              (let* ((container-class (org-element-property :HTML_CONTAINER_CLASS headline))
+                     (containter-class-str (if (org-string-nw-p container-class)
+                                               (concat " " container-class)
+                                             "")))
+                (format (concat "<%s class=\"outline-%d%s\">\n"
+                                "  <%s></%s>\n"
+                                "%s%s\n"
+                                "</%s>")
+                        wrap-element level containter-class-str
+                        wrap-element wrap-element
+                        headline-title content-str
+                        wrap-element))
+            (format "%s%s" headline-title content-str))))))))
 
 ;;;;; Headline Helpers
+
+(defun org-hugo--container (headline info)
+  "Get the HTML container element for HEADLINE.
+
+INFO is a plist used as a communication channel.
+
+If a headline has `:HTML_CONTAINER' property, that is used for
+the container element.
+
+Else if the `:html-container' property in the INFO is nil or \"\", no
+HTML element is wrapped around the HEADLINE.
+
+Else if the `:html-container' property is a non-empty string:
+  - For the top level headlines, wrapping is done using that property.
+  - For second and lower level headlines, wrapping is done using
+    the HTML <div> tags."
+  (or (org-element-property :HTML_CONTAINER headline)
+      (and (org-string-nw-p (plist-get info :html-container))
+           (if (= 1 (org-export-get-relative-level headline info))
+	       (plist-get info :html-container)
+	     "div"))))
+
 ;;;###autoload
 (defun org-hugo-slug (str)
   "Convert string STR to a `slug' and return that string.

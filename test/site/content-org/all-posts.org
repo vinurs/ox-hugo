@@ -3818,6 +3818,10 @@ Line 5 has this > charcter in-between and is retained.
 This is /an article/.
 #+end_article
 **** Block with NAME
+:PROPERTIES:
+:HTML_CONTAINER: section
+:HTML_CONTAINER_CLASS: foo
+:END:
 #+name: Aside-A
 #+begin_aside
 /Some/ *text* --- 1
