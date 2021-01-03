@@ -198,6 +198,8 @@ Emacs installation.  If Emacs is installed using
   )
 
 (require 'org-id)
+(require 'org-attach)
+
 (require 'ox-hugo)
 (defun org-hugo-export-all-wim-to-md ()
   (org-hugo-export-wim-to-md :all-subtrees nil nil :noerror))
@@ -211,6 +213,9 @@ Emacs installation.  If Emacs is installed using
 (with-eval-after-load 'org
   ;; Allow multiple line Org emphasis markup
   ;; http://emacs.stackexchange.com/a/13828/115
+
+  (setq org-directory "~/sys-cfg/github/pkms/")
+  (setq org-attach-id-dir (expand-file-name ".attach/" org-directory))
   (setcar (nthcdr 4 org-emphasis-regexp-components) 20) ;Up to 20 lines, default is just 1
   ;; Below is needed to apply the modified `org-emphasis-regexp-components'
   ;; settings from above.

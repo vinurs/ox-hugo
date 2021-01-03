@@ -70,10 +70,12 @@ TEST_ENABLED=0
 OX_HUGO_TEST_DIR=$(shell pwd)/test
 
 # Base directory for the Hugo example site
-OX_HUGO_TEST_SITE_DIR=$(OX_HUGO_TEST_DIR)/site
+# OX_HUGO_TEST_SITE_DIR=$(OX_HUGO_TEST_DIR)/site
+OX_HUGO_TEST_SITE_DIR=~/sys-cfg/github/vinurs.github.io
 
 # Directory containing Org files for the test site
-OX_HUGO_TEST_ORG_DIR=$(OX_HUGO_TEST_SITE_DIR)/content-org
+# OX_HUGO_TEST_ORG_DIR=$(OX_HUGO_TEST_SITE_DIR)/content-org
+OX_HUGO_TEST_ORG_DIR=~/sys-cfg/github/pkms
 # https://stackoverflow.com/a/3774731/1219634
 # Note that the use of immediate assignment := rather than recursive
 # assignment = is important here: you do not want to be running the
