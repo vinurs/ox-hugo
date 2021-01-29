@@ -21,8 +21,9 @@
                   "-fenced_divs"
                   "-fenced_code_attributes"
                   "-bracketed_spans")
-    "--atx-headers"
-    "--id-prefix=fn:")
+    "--markdown-headings=atx"
+    "--id-prefix=fn:"
+    "--citeproc")
   "Pandoc arguments used in `org-hugo-pandoc-cite--run-pandoc'.
 
 -f markdown : Convert *from* Markdown
@@ -64,11 +65,19 @@ arguments.")
   "Buffer to contain the `pandoc' run output and errors.")
 
 (defvar org-hugo-pandoc-cite--references-header-regexp
-  "^<div id=\"refs\" .*>$"
+  "^<div id=\"refs\" class=\"references"
   "Regexp to match the Pandoc-inserted references header string.
 
 This string is present only if Pandoc has resolved one or more
-references.")
+references.
+
+Pandoc 2.11.4.")
+
+(defvar org-hugo-pandoc-cite--reference-entry-regexp
+  "^<div id=\"ref-[^\"]+\" .*csl-entry.*"
+  "Regexp to match the Pandoc-inserted reference entry strings.
+
+Pandoc 2.11.4.")
 
 (defun org-hugo-pandoc-cite--restore-fm-in-orig-outfile (orig-outfile fm &optional orig-full-contents)
   "Restore the intended front-matter format in ORIG-OUTFILE.
@@ -181,9 +190,8 @@ Required fixes:
 
       ;; Add the Blackfriday required hack to Pandoc ref divs.
       (save-excursion
-        (let ((regexp "^<div id=\"ref-[^\"]+\">$"))
-          (while (re-search-forward regexp nil :noerror)
-            (replace-match "\\&\n  <div></div>")))) ;See footnote 1
+        (while (re-search-forward org-hugo-pandoc-cite--reference-entry-regexp nil :noerror)
+          (replace-match "\\&\n  <div></div>"))) ;See footnote 1
 
       ;; Fix Hugo shortcodes.
       (save-excursion
@@ -324,8 +332,6 @@ INFO is a plist used as a communication channel."
         (progn
           (unless (executable-find "pandoc")
             (user-error "[ox-hugo] pandoc executable not found in PATH"))
-          (unless (executable-find "pandoc-citeproc")
-            (user-error "[ox-hugo] pandoc-citeproc executable not found in PATH"))
           (org-hugo-pandoc-cite--parse-citations info orig-outfile))
       (org-hugo-pandoc-cite--restore-fm-in-orig-outfile
        orig-outfile fm orig-outfile-contents))))
