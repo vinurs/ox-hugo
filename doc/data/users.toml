@@ -230,12 +230,6 @@
   source = "https://github.com/taipapamotohus/Taipapablog"
   site = "https://taipapamotohus.com/"
 
-[grugrut]
-  author = "grugrut"
-  source = "https://github.com/grugrut/til"
-  site = "https://grugrut.github.io/til/"
-  org_dir = "draft"
-
 [alexmurray]
   author = "Alex Murray"
   source = "https://github.com/alexmurray/ubuntu-security-podcast"
@@ -421,7 +415,18 @@
   source = "https://github.com/jhoodsmith/blog-source"
   site = "https://www.hood-smith.me.uk"
   branch = "main"
-
+  
+[soham]
+  author = "Soham Pal"
+  source = "https://gitlab.com/e-eight/e-eight.gitlab.io"
+  site = "https://soham.dev"
+  
+[martinbaillie]
+  author = "Martin Baillie"
+  source = "https://github.com/martinbaillie/martinbaillie"
+  site = "https://martin.baillie.id"
+  branch = "main"
+  
 # []
 #   author = ""
 #   source = ""
