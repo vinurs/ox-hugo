@@ -149,6 +149,7 @@
   author = "Göktuğ Kayaalp"
   source = "https://github.com/cadadr/elisp"
   site = "https://cadadr.github.io/elisp/index.html"
+  branch = "stable"
 
 [jackbaty]
   author = "Jack Baty"
@@ -347,11 +348,6 @@
   site = "https://notfound.cn/"
   org_dir = "content-org"
 
-[drdavis]
-  author = "Doug Davis"
-  source = "https://github.com/drdavis/ddavis.io"
-  site = "https://ddavis.io/"
-
 [ctanas]
   author = "Claudiu Tănăselia"
   source = "https://github.com/ctanas/parsec.ro"
@@ -410,18 +406,24 @@
   source = "https://github.com/jhoodsmith/blog-source"
   site = "https://www.hood-smith.me.uk"
   branch = "main"
-  
+
 [soham]
   author = "Soham Pal"
   source = "https://gitlab.com/e-eight/e-eight.gitlab.io"
   site = "https://soham.dev"
-  
+
 [martinbaillie]
   author = "Martin Baillie"
   source = "https://github.com/martinbaillie/martinbaillie"
   site = "https://martin.baillie.id"
   branch = "main"
-  
+
+[carlhenrikek]
+  author = "Carl Henrik Ek"
+  source = "https://github.com/mlatcl/mlaccelerate"
+  site = "https://mlatcl.github.io/mlaccelerate/"
+  branch = "master"
+
 # []
 #   author = ""
 #   source = ""
